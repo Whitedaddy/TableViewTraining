@@ -16,10 +16,13 @@ class ChildTableCell: UITableViewCell {
     let ageLabel = UILabel()
     let deleteOneButton = UIButton()
     
+    var deleteButtonAction : (() -> ())?
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         addViews()
         makeConstraints()
+        deleteOneButton.addTarget(self, action: #selector(deleteOneChild(sender: )), for: .touchUpInside)
     }
     required init?(coder: NSCoder) {
         fatalError("Fatal error")
@@ -61,6 +64,20 @@ class ChildTableCell: UITableViewCell {
             make.trailing.equalTo(contentView).inset(50)
         }
     }
-}
+    
+    @objc func deleteOneChild (sender: UIButton) {
+        deleteButtonAction?()
+        
+//        let id = sender.tag
+//        print(id)
+//        ChildData.sharedChild.child.remove(at: id)
+//
+//        self.myTableView.beginUpdates()
+//        let indexPath = [(NSIndexPath(row:  id, section: 0) as IndexPath)]
+//        self.myTableView.deleteRows(at: indexPath, with: .automatic)
+//        self.myTableView.endUpdates()
+////        self.myTableView.reloadData()
 
+    }
+}
 

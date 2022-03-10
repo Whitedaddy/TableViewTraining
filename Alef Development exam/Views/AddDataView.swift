@@ -10,6 +10,7 @@ import SnapKit
 
 
 class AddDataView: UIView {
+    
     // MARK:  Variables
     var viewcontainer: UIView!
     
@@ -31,6 +32,12 @@ class AddDataView: UIView {
         makeFirstNameTextField()
         makeAgeTextField()
         makeAddButton()
+        
+        ChildData.sharedChild.child.append(SingleChild(name: "a", age: "10"))
+        ChildData.sharedChild.child.append(SingleChild(name: "b", age: "15"))
+        ChildData.sharedChild.child.append(SingleChild(name: "c", age: "20"))
+        ChildData.sharedChild.child.append(SingleChild(name: "d", age: "25"))
+
         setupTableView()
         setupDeleteAllButton()
     }
@@ -217,11 +224,10 @@ class AddDataView: UIView {
     @objc func deleteEveryChild (sender: UIButton) {
         ChildData.sharedChild.child.removeAll()
         self.myTableView.reloadData()
-//        self.myTableView.beginUpdates()
-//        let indexPath = [(NSIndexPath(row:  ChildData.sharedChild.child.count-1, section: 0) as IndexPath)]
-//        self.myTableView.deleteRows(at: indexPath, with: .automatic)
-//        self.myTableView.endUpdates()
     }
+    
+    //
+   
 }
 
 //MARK: Функции для переключения клавиатуры
@@ -247,6 +253,17 @@ extension AddDataView:  UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: identifire, for: indexPath) as! ChildTableCell
         cell.nameLabel.text = "\(ChildData.sharedChild.child[indexPath.row].name)"
         cell.ageLabel.text = "\(ChildData.sharedChild.child[indexPath.row].age)"
+        cell.deleteButtonAction = { [unowned self] in
+            let index = tableView.indexPath(for: cell)
+            let id = index!.row
+            print(id)
+            ChildData.sharedChild.child.remove(at: id)
+            
+            self.myTableView.beginUpdates()
+            let indexPath = [(NSIndexPath(row:  id, section: 0) as IndexPath)]
+            self.myTableView.deleteRows(at: indexPath, with: .automatic)
+            self.myTableView.endUpdates()
+        }
         return cell
     }
     
