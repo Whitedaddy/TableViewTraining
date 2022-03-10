@@ -67,7 +67,7 @@ class ChildTableCell: UITableViewCell {
     
     @objc func deleteOneChild (sender: UIButton) {
         deleteButtonAction?()
-        
+
 //        let id = sender.tag
 //        print(id)
 //        ChildData.sharedChild.child.remove(at: id)

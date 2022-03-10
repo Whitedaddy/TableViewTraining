@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import CoreData
 
 
 class AddDataView: UIView {
@@ -32,12 +33,6 @@ class AddDataView: UIView {
         makeFirstNameTextField()
         makeAgeTextField()
         makeAddButton()
-        
-        ChildData.sharedChild.child.append(SingleChild(name: "a", age: "10"))
-        ChildData.sharedChild.child.append(SingleChild(name: "b", age: "15"))
-        ChildData.sharedChild.child.append(SingleChild(name: "c", age: "20"))
-        ChildData.sharedChild.child.append(SingleChild(name: "d", age: "25"))
-
         setupTableView()
         setupDeleteAllButton()
     }
@@ -185,7 +180,7 @@ class AddDataView: UIView {
         
         if (name != "" && age != "" && age.allSatisfy(("0"..."9").contains)) {
             if (ChildData.sharedChild.child.count < 5 ) {
-                ChildData.sharedChild.child.append(SingleChild(name: name, age: age))
+                saveChilds(name: name, age: age)
                 print(ChildData.sharedChild.child)
                 DispatchQueue.main.async {
                     self.myTableView.beginUpdates()
@@ -222,11 +217,60 @@ class AddDataView: UIView {
     
     //Удалить всех детей
     @objc func deleteEveryChild (sender: UIButton) {
+        deleteChilds()
         ChildData.sharedChild.child.removeAll()
         self.myTableView.reloadData()
     }
     
-    //
+    //Сохранение в coreData
+    func saveChilds(name: String, age: String) {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let context = appDelegate.persistentContainer.viewContext
+        
+        guard let entity = NSEntityDescription.entity(forEntityName: "Childs", in: context) else {return}
+        
+        let childObject = Childs(entity: entity, insertInto: context)
+        childObject.name = name
+        childObject.age = age
+        
+        do {
+            try context.save()
+            ChildData.sharedChild.child.append(childObject)
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+    }
+    
+    //Удаление из coreData
+    func deleteChilds() {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let context = appDelegate.persistentContainer.viewContext
+        let fetchRequest: NSFetchRequest<Childs> = Childs.fetchRequest()
+        if case ChildData.sharedChild.child = try? context.fetch(fetchRequest) {
+            for ch in ChildData.sharedChild.child {
+                context.delete(ch)
+            }
+        }
+        do {
+            try context.save()
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+    }
+    
+    func deleteSingleChild(num: Int) {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let context = appDelegate.persistentContainer.viewContext
+        let fetchRequest: NSFetchRequest<Childs> = Childs.fetchRequest()
+        if case ChildData.sharedChild.child = try? context.fetch(fetchRequest) {
+            context.delete(ChildData.sharedChild.child[num])
+        }
+        do {
+            try context.save()
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+    }
    
 }
 
@@ -251,14 +295,17 @@ extension AddDataView:  UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: identifire, for: indexPath) as! ChildTableCell
-        cell.nameLabel.text = "\(ChildData.sharedChild.child[indexPath.row].name)"
-        cell.ageLabel.text = "\(ChildData.sharedChild.child[indexPath.row].age)"
+        
+        let text = ChildData.sharedChild.child[indexPath.row].name!
+        let age = ChildData.sharedChild.child[indexPath.row].age!
+        cell.nameLabel.text = text
+        cell.ageLabel.text = age
         cell.deleteButtonAction = { [unowned self] in
             let index = tableView.indexPath(for: cell)
             let id = index!.row
             print(id)
+            deleteSingleChild(num: id)
             ChildData.sharedChild.child.remove(at: id)
-            
             self.myTableView.beginUpdates()
             let indexPath = [(NSIndexPath(row:  id, section: 0) as IndexPath)]
             self.myTableView.deleteRows(at: indexPath, with: .automatic)

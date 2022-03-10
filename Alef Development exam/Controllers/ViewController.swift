@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import CoreData
 
 class ViewController: UIViewController {
     
@@ -19,6 +20,15 @@ class ViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let context = appDelegate.persistentContainer.viewContext
+        let fetchRequest: NSFetchRequest<Childs> = Childs.fetchRequest()
+        do {
+            ChildData.sharedChild.child = try context.fetch(fetchRequest)
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
         
         let addDataView = AddDataView ()
         view.addSubview(addDataView)

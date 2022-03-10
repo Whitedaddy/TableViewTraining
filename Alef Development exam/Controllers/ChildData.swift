@@ -10,12 +10,8 @@ import UIKit
 
 class ChildData {
     static let sharedChild = ChildData()
-    var child: [SingleChild] = []
+    var child: [Childs] = []
     
     private init () {}
 }
 
-struct SingleChild {
-    var name: String
-    var age: String
-}
